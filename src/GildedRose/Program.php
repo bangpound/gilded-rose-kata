@@ -48,8 +48,12 @@ namespace GildedRose;
 class Program
 {
     private $items = array();
+	/**
+	 * @var BehaviorInterface[]
+	 */
+	private $behaviors;
 
-    public static function Main($days = 1)
+	public static function Main($days = 1)
     {
         echo "OMGHAI!\n";
 
@@ -79,58 +83,26 @@ class Program
     public function __construct(array $items)
     {
         $this->items = $items;
-    }
+
+		$this->behaviors = array(
+			'default' => new DefaultBehavior(),
+			'Aged Brie' => new AgedBrieBehavior(),
+			'Sulfuras, Hand of Ragnaros' => new SulfurasBehavior(),
+			'Backstage passes to a TAFKAL80ETC concert' => new BackstageBehavior(),
+			'Conjured Mana Cake' => new ConjuredBehavior(),
+		);
+	}
 
     public function UpdateQuality()
     {
-        for ($i = 0; $i < count($this->items); $i++) {
-            if ($this->items[$i]->name != "Aged Brie" && $this->items[$i]->name != "Backstage passes to a TAFKAL80ETC concert") {
-                if ($this->items[$i]->quality > 0) {
-                    if ($this->items[$i]->name != "Sulfuras, Hand of Ragnaros") {
-                        $this->items[$i]->quality = $this->items[$i]->quality - 1;
-                    }
-                }
-            } else {
-                if ($this->items[$i]->quality < 50) {
-                    $this->items[$i]->quality = $this->items[$i]->quality + 1;
+    	foreach ($this->items as $item) {
+    		/** @var BehaviorInterface $behavior */
+			$behavior = $this->behaviors['default'];
+			if (isset($this->behaviors[$item->name])) {
+				$behavior = $this->behaviors[$item->name];
+			}
 
-                    if ($this->items[$i]->name == "Backstage passes to a TAFKAL80ETC concert") {
-                        if ($this->items[$i]->sellIn < 11) {
-                            if ($this->items[$i]->quality < 50) {
-                                $this->items[$i]->quality = $this->items[$i]->quality + 1;
-                            }
-                        }
-
-                        if ($this->items[$i]->sellIn < 6) {
-                            if ($this->items[$i]->quality < 50) {
-                                $this->items[$i]->quality = $this->items[$i]->quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ($this->items[$i]->name != "Sulfuras, Hand of Ragnaros") {
-                $this->items[$i]->sellIn = $this->items[$i]->sellIn - 1;
-            }
-
-            if ($this->items[$i]->sellIn < 0) {
-                if ($this->items[$i]->name != "Aged Brie") {
-                    if ($this->items[$i]->name != "Backstage passes to a TAFKAL80ETC concert") {
-                        if ($this->items[$i]->quality > 0) {
-                            if ($this->items[$i]->name != "Sulfuras, Hand of Ragnaros") {
-                                $this->items[$i]->quality = $this->items[$i]->quality - 1;
-                            }
-                        }
-                    } else {
-                        $this->items[$i]->quality = $this->items[$i]->quality - $this->items[$i]->quality;
-                    }
-                } else {
-                    if ($this->items[$i]->quality < 50) {
-                        $this->items[$i]->quality = $this->items[$i]->quality + 1;
-                    }
-                }
-            }
-        }
+			$behavior->UpdateQuality($item);
+		}
     }
 }
